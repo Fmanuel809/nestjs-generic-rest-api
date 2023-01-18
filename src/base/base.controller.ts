@@ -1,5 +1,5 @@
 import { ValidatorBase } from './base.validator';
-import { Base } from './entities/base.entity';
+import { Base, Auditable } from './entities/base.entity';
 import {
   Get,
   Post,
@@ -50,8 +50,15 @@ export class BaseController<TDto extends Dto, TEntity extends Base> {
           },
           HttpStatus.BAD_REQUEST,
         );
+
+      const audit: Auditable = {
+        createdBy: 'Created by me',
+        createdDate: new Date(),
+      };
+      entity.audit = audit;
       return this.baseService.create(entity);
     } catch (ex) {
+      console.error(ex);
       return ex;
     }
   }
@@ -89,7 +96,7 @@ export class BaseController<TDto extends Dto, TEntity extends Base> {
   async findOne(@Param('id') id: string): Promise<TDto> {
     try {
       const data = await this.baseService
-        .findOne(+id)
+        .findOne(id)
         .then((res) => {
           console.log(res);
           return this._mapper.mapToDto(res);
@@ -126,7 +133,13 @@ export class BaseController<TDto extends Dto, TEntity extends Base> {
           },
           HttpStatus.BAD_REQUEST,
         );
-      return this.baseService.update(+id, entity);
+
+      const audit: Auditable = {
+        modifiedBy: 'Modified by me',
+        modifiedDate: new Date(),
+      };
+      entity.audit = audit;
+      return this.baseService.update(id, entity);
     } catch (ex) {
       return ex;
     }
@@ -137,6 +150,6 @@ export class BaseController<TDto extends Dto, TEntity extends Base> {
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
   remove(@Param('id') id: string) {
-    return this.baseService.remove(+id);
+    return this.baseService.remove(id);
   }
 }
