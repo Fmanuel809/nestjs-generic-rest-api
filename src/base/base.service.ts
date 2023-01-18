@@ -1,27 +1,31 @@
+import { IRepository } from './repository.interface';
 import { Base } from './entities/base.entity';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class BaseService<TEntity extends Base> {
-  create(entity: TEntity) {
-    console.log(entity);
-    return 'This action adds a new base';
+  private readonly _repository: IRepository<TEntity>;
+  constructor(repository: IRepository<TEntity>) {
+    this._repository = repository;
+  }
+
+  async create(entity: TEntity) {
+    return this._repository.create(entity);
   }
 
   async findAll(): Promise<TEntity[]> {
-    return [];
+    return this._repository.findAll();
   }
 
-  async findOne(id: number): Promise<TEntity> {
-    return null;
+  async findOne(id: string): Promise<TEntity> {
+    return this._repository.findOne(id);
   }
 
-  update(id: number, entity: TEntity) {
-    console.log(entity);
-    return `This action updates a #${id} base`;
+  update(id: string, entity: TEntity) {
+    return this._repository.update(id, entity);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} base`;
+  remove(id: string) {
+    return this._repository.remove(id);
   }
 }
