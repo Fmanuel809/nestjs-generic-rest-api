@@ -1,13 +1,18 @@
+import { CitizenModule } from './citizens/citizens.module';
+import { UserModule } from './users/user.module';
 import { CustomConfigModule } from './config/custom-config.module';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
-import { DemoModule } from './demo/demo.module';
 import { classes } from '@automapper/classes';
 import { AutomapperModule } from '@automapper/nestjs';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigService } from './config/config.service';
+import { AuthModule } from './auth/auth.module';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './config/guards/jwt-auth.guard';
+import { RolesGuard } from './config/guards/roles.guard';
 
 @Module({
   imports: [
@@ -24,9 +29,21 @@ import { ConfigService } from './config/config.service';
       useFactory: async (configService: ConfigService) =>
         await configService.getMongoConfig(),
     }),
-    DemoModule,
+    UserModule,
+    AuthModule,
+    CitizenModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}

@@ -18,6 +18,14 @@ services:
       - mongoconfig:/data/configdb
     networks:
       - mongo_net
+
+  api-server:
+    image: nest-api-server
+    container_name: api-server
+    ports:
+      - 8080:3000
+    networks:
+      - mongo_net
     
 volumes:
   mongodb:
