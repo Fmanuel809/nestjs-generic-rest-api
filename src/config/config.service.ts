@@ -25,7 +25,7 @@ export class ConfigService {
   public async getMongoConfig() {
     return {
       // eslint-disable-next-line prettier/prettier
-      uri: `${this.get('MONGODB_PROTOCOL')}://${this.get('MONGODB_USER')}:${this.get('MONGODB_PASSWORD')}@${this.get('MONGODB_SERVER')}:${this.get('MONGODB_PORT')}/${this.get('MONGODB_DBNAME')}`,
+      uri: `${this.get('MONGODB_PROTOCOL')}://${encodeURIComponent(this.get('MONGODB_USER'))}:${encodeURIComponent(this.get('MONGODB_PASSWORD'))}@${this.get('MONGODB_SERVER')}:${this.get('MONGODB_PORT')}/${this.get('MONGODB_DBNAME')}`,
       useNewUrlParser: true,
       useUnifiedTopology: true,
     };

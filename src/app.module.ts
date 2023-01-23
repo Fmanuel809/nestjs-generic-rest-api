@@ -26,8 +26,11 @@ import { RolesGuard } from './config/guards/roles.guard';
     CustomConfigModule,
     MongooseModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService) =>
-        await configService.getMongoConfig(),
+      useFactory: async (configService: ConfigService) => {
+        const con = await configService.getMongoConfig();
+        console.log(con.uri);
+        return con;
+      },
     }),
     UserModule,
     AuthModule,
