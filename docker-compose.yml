@@ -7,22 +7,34 @@ services:
     ports:
       - 27017:27017
     environment:
-      - MONGO_INITDB_DATABASE=demo
+      - MONGO_INITDB_DATABASE=admin
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=admin
     volumes:
-      # seeding scripts
-      - ./mongo-entrypoint:/docker-entrypoint-initdb.d
-      # named volumes
-      - mongodb:/data/db
-      - mongoconfig:/data/configdb
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - mongodb-data:/data/db
+      - mongodb-log:/var/log/mongodb
     networks:
-      - mongo_net
+      consultanetwork:
+        ipv4_address: 172.20.0.2
+
+  api-server:
+    image: nest-node-server
+    container_name: api-server
+    ports:
+      - 8080:3000
+    networks:
+      consultanetwork:
+        ipv4_address: 172.20.0.3
     
 volumes:
-  mongodb:
-  mongoconfig:
+  mongodb-data:
+    driver: local
+  mongodb-log:
+    driver: local
 
 networks:
-  mongo_net:
-    driver: bridge
+  consultanetwork:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

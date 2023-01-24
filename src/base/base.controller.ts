@@ -1,5 +1,5 @@
 import { ValidatorBase } from './base.validator';
-import { Base } from './entities/base.entity';
+import { Base, Auditable } from './entities/base.entity';
 import {
   Get,
   Post,
@@ -9,6 +9,7 @@ import {
   Delete,
   HttpException,
   HttpStatus,
+  Request,
 } from '@nestjs/common';
 import { BaseService } from './base.service';
 import { Dto } from './dto/base.dto';
@@ -38,7 +39,7 @@ export class BaseController<TDto extends Dto, TEntity extends Base> {
   @ApiCreatedResponse({ description: 'Created Succesfully' })
   @ApiUnprocessableEntityResponse({ description: 'Bad Request' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
-  create(@Body() dto: TDto) {
+  create(@Request() req: any, @Body() dto: TDto) {
     try {
       const entity: TEntity = this._mapper.mapToEntity(dto);
       const validationErrors = this._validator.validate(entity);
@@ -50,8 +51,15 @@ export class BaseController<TDto extends Dto, TEntity extends Base> {
           },
           HttpStatus.BAD_REQUEST,
         );
+
+      const audit: Auditable = {
+        createdBy: req.user.userId,
+        createdDate: new Date(),
+      };
+      entity.audit = audit;
       return this.baseService.create(entity);
     } catch (ex) {
+      console.error(ex);
       return ex;
     }
   }
@@ -89,9 +97,8 @@ export class BaseController<TDto extends Dto, TEntity extends Base> {
   async findOne(@Param('id') id: string): Promise<TDto> {
     try {
       const data = await this.baseService
-        .findOne(+id)
+        .findById(id)
         .then((res) => {
-          console.log(res);
           return this._mapper.mapToDto(res);
         })
         .catch((err) => {
@@ -114,7 +121,11 @@ export class BaseController<TDto extends Dto, TEntity extends Base> {
   @ApiNotFoundResponse({ description: 'Resource not found' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @ApiUnprocessableEntityResponse({ description: 'Bad Request' })
-  update(@Param('id') id: string, @Body() dto: TDto) {
+  async update(
+    @Request() req: any,
+    @Param('id') id: string,
+    @Body() dto: TDto,
+  ) {
     try {
       const entity: TEntity = this._mapper.mapToEntity(dto);
       const validationErrors = this._validator.validate(entity);
@@ -126,7 +137,13 @@ export class BaseController<TDto extends Dto, TEntity extends Base> {
           },
           HttpStatus.BAD_REQUEST,
         );
-      return this.baseService.update(+id, entity);
+
+      const audit: Auditable = {
+        modifiedBy: req.user.userId,
+        modifiedDate: new Date(),
+      };
+      entity.audit = audit;
+      return this.baseService.update(id, entity);
     } catch (ex) {
       return ex;
     }
@@ -136,7 +153,7 @@ export class BaseController<TDto extends Dto, TEntity extends Base> {
   @ApiOkResponse({ description: 'The resource was returned successfully' })
   @ApiForbiddenResponse({ description: 'Unauthorized Request' })
   @ApiNotFoundResponse({ description: 'Resource not found' })
-  remove(@Param('id') id: string) {
-    return this.baseService.remove(+id);
+  async remove(@Param('id') id: string, @Request() req: any) {
+    return await this.baseService.remove(id);
   }
 }
