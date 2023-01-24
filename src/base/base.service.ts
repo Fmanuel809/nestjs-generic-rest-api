@@ -17,15 +17,19 @@ export class BaseService<TEntity extends Base> {
     return this._repository.findAll();
   }
 
-  async findOne(id: string): Promise<TEntity> {
-    return this._repository.findOne(id);
+  async findById(id: string): Promise<TEntity> {
+    return this._repository.findById(id);
   }
 
-  update(id: string, entity: TEntity) {
+  async findOne(query: any): Promise<TEntity> {
+    return this._repository.findOne(query);
+  }
+
+  async update(id: string, entity: TEntity) {
     return this._repository.update(id, entity);
   }
 
-  remove(id: string) {
+  async remove(id: string) {
     return this._repository.remove(id);
   }
 }
