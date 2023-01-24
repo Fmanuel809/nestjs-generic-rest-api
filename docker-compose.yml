@@ -2,6 +2,7 @@ version: '3.6'
 
 services:
   mongodb-server:
+    hostname: 'mongodb'
     image: mongo
     container_name: mongodb-server
     ports:
@@ -14,18 +15,17 @@ services:
       - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
       - mongodb-data:/data/db
       - mongodb-log:/var/log/mongodb
-    networks:
-      consultanetwork:
-        ipv4_address: 172.20.0.2
+    networks: 
+      - consultanetwork
 
   api-server:
+    hostname: 'api-server'
     image: nest-node-server
     container_name: api-server
     ports:
       - 8080:3000
     networks:
-      consultanetwork:
-        ipv4_address: 172.20.0.3
+      - consultanetwork
     
 volumes:
   mongodb-data:
@@ -35,6 +35,4 @@ volumes:
 
 networks:
   consultanetwork:
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
+    driver: bridge
